@@ -232,7 +232,15 @@ function HomeContent() {
       } catch (error: any) {
         if (error.response?.status === 401) {
           // Not authenticated, need to join
-          alert('Нужна персональная ссылка для входа');
+          // В Telegram Mini App показываем другое сообщение
+          const isTelegram = typeof window !== 'undefined' && window.Telegram?.WebApp;
+          if (isTelegram) {
+            // В Telegram можно показать кнопку для получения ссылки
+            console.log('User not authenticated in Telegram');
+            // TODO: Можно добавить логику авторизации через Telegram
+          } else {
+            alert('Нужна персональная ссылка для входа');
+          }
         }
       } finally {
         setLoading(false);

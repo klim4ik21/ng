@@ -181,22 +181,48 @@ sudo systemctl enable nginx
 
 ## Шаг 5: Настройка SSL (HTTPS)
 
-### 5.1. Получение SSL сертификата
+**Важно:** Safari строг к SSL сертификатам. Выберите один из вариантов ниже.
+
+### Вариант A: Cloudflare Proxy (рекомендуется для быстрого SSL)
+
+Если в Cloudflare A-запись настроена с **оранжевым облаком (Proxied)**:
+
+1. Зайдите в Cloudflare Dashboard → **SSL/TLS** → **Overview**
+2. Установите режим: **Full** (рекомендуется) или **Full (strict)**
+   - **Full**: Работает даже без SSL на сервере (Cloudflare предоставляет SSL для пользователей)
+   - **Full (strict)**: Требует валидный SSL сертификат на сервере
+3. Сайт сразу будет доступен по HTTPS без предупреждений в Safari!
+
+**Преимущества:**
+- ✅ Работает сразу, не нужно настраивать certbot
+- ✅ Safari не показывает предупреждения
+- ✅ Автоматическое обновление сертификатов от Cloudflare
+
+### Вариант B: DNS Only + Let's Encrypt (полный контроль)
+
+Если в Cloudflare A-запись настроена с **серым облаком (DNS only)**:
+
+#### 5.1. Получение SSL сертификата через Let's Encrypt
 
 ```bash
 sudo certbot --nginx -d santa.richislav.com
 ```
 
 Certbot автоматически:
-- Получит SSL сертификат
-- Настроит nginx для HTTPS
+- Получит SSL сертификат от Let's Encrypt (бесплатный, валидный)
+- Обновит конфигурацию nginx для HTTPS (добавит SSL директивы)
 - Настроит автоматическое обновление сертификата
+- Настроит редирект с HTTP на HTTPS
 
-### 5.2. Проверка автообновления сертификата
+После выполнения команды сайт будет доступен по HTTPS: `https://santa.richislav.com`
+
+#### 5.2. Проверка автообновления сертификата
 
 ```bash
 sudo certbot renew --dry-run
 ```
+
+Это должно пройти успешно. Если есть ошибки, certbot покажет, как их исправить.
 
 ## Шаг 6: Проверка работы
 
@@ -313,11 +339,26 @@ node server.js  # Запуск вручную для отладки
 2. Проверьте порт: `netstat -tulpn | grep 3001`
 3. Проверьте логи nginx: `sudo tail -f /var/log/nginx/santa-app-error.log`
 
-### SSL сертификат не работает
+### SSL сертификат не работает / Safari показывает предупреждение
 
+**Если используете Cloudflare Proxy:**
+1. Зайдите в Cloudflare Dashboard → **SSL/TLS** → **Overview**
+2. Установите режим **Full** (не "Flexible"!)
+3. Подождите 1-2 минуты для применения настроек
+4. Очистите кэш браузера и попробуйте снова
+
+**Если используете DNS Only + Let's Encrypt:**
+1. Проверьте сертификат: `sudo certbot certificates`
+2. Убедитесь, что certbot обновил nginx конфигурацию
+3. Проверьте nginx конфигурацию: `sudo nginx -t`
+4. Перезапустите nginx: `sudo systemctl restart nginx`
+5. Проверьте автообновление: `sudo certbot renew --dry-run`
+
+**Общие проверки:**
 1. Проверьте, что домен указывает на сервер: `nslookup santa.richislav.com`
 2. Проверьте firewall: `sudo ufw status`
 3. Убедитесь, что порты 80 и 443 открыты: `sudo ufw allow 80 && sudo ufw allow 443`
+4. Проверьте SSL сертификат онлайн: https://www.ssllabs.com/ssltest/analyze.html?d=santa.richislav.com
 
 ### Файлы не загружаются
 
@@ -357,6 +398,59 @@ pm2 restart santa-frontend
 Эта ошибка возникает, если в конфигурации nginx указан `listen 443 ssl`, но SSL сертификаты еще не настроены. 
 
 **Решение:** Используйте конфигурацию из `deploy/nginx.conf`, которая по умолчанию настроена на HTTP (порт 80). SSL будет настроен автоматически certbot'ом при выполнении `sudo certbot --nginx -d santa.richislav.com`.
+
+### DNS не разрешается (не удается найти DNS-адрес)
+
+Если браузер не может найти `santa.richislav.com`, проверьте:
+
+1. **Проверьте A-запись в Cloudflare:**
+   - Тип: A
+   - Имя: `santa`
+   - IPv4: IP адрес вашего сервера
+   - Proxy: DNS only (серое облако) или Proxied (оранжевое)
+
+2. **Проверьте распространение DNS:**
+   ```bash
+   nslookup santa.richislav.com
+   # Или онлайн: https://dnschecker.org/
+   ```
+
+3. **Если используете Cloudflare Proxy (оранжевое облако):**
+   - Установите SSL режим на "Full" (SSL/TLS → Overview)
+   - DNS может распространяться 5-30 минут
+
+4. **Очистите DNS кэш:**
+   - Windows: `ipconfig /flushdns`
+   - macOS: `sudo dscacheutil -flushcache`
+   - Linux: `sudo systemd-resolve --flush-caches`
+
+5. **Проверьте IP сервера:**
+   ```bash
+   curl ifconfig.me  # На сервере
+   ```
+   Убедитесь, что IP в A-записи совпадает с этим IP.
+
+Подробная диагностика: см. `deploy/DNS_TROUBLESHOOTING.md` и `deploy/QUICK_FIX.md`
+
+**Если DNS checker показывает, что DNS распространился, но браузер не может подключиться:**
+
+1. **Очистите DNS кэш:**
+   - Windows: `ipconfig /flushdns`
+   - macOS: `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
+   - Linux: `sudo systemd-resolve --flush-caches`
+
+2. **Попробуйте в режиме инкогнито** или другой браузер
+
+3. **Попробуйте HTTP вместо HTTPS:** `http://santa.richislav.com`
+
+4. **Проверьте на сервере:**
+   ```bash
+   sudo systemctl status nginx
+   sudo nginx -t
+   sudo ufw status
+   ```
+
+5. **Если используете Cloudflare Proxy:** установите SSL режим "Full" в Cloudflare Dashboard
 
 ## Безопасность
 

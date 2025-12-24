@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import './globals.css'
+import TelegramInit from './components/TelegramInit'
 
 export const metadata: Metadata = {
   title: 'Новогодний челлендж',
@@ -11,6 +13,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   themeColor: '#f97316',
+  userScalable: false, // Отключаем зум для лучшего UX в Telegram
 }
 
 export default function RootLayout({
@@ -20,7 +23,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        {/* Telegram WebApp скрипт - загружаем синхронно для быстрой инициализации */}
+        <Script 
+          src="https://telegram.org/js/telegram-web-app.js" 
+          strategy="afterInteractive"
+          onLoad={() => {
+            // Скрипт загружен, можно инициализировать
+            if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+              window.Telegram.WebApp.ready();
+            }
+          }}
+        />
+        <TelegramInit />
+        {children}
+      </body>
     </html>
   )
 }
