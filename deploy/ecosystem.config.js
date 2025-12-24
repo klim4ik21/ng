@@ -1,0 +1,45 @@
+// PM2 конфигурация для backend и frontend
+module.exports = {
+  apps: [
+    {
+      name: 'santa-backend',
+      script: './backend/server.js',
+      cwd: '/var/www/santa-app',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3001,
+        TZ: 'Europe/Moscow',
+      },
+      error_file: '/var/log/pm2/santa-backend-error.log',
+      out_file: '/var/log/pm2/santa-backend-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+    },
+    {
+      name: 'santa-frontend',
+      script: 'npm',
+      args: 'start',
+      cwd: '/var/www/santa-app/frontend',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3000,
+        NEXT_PUBLIC_API_URL: 'https://santa.richislav.com/api',
+        TZ: 'Europe/Moscow',
+      },
+      error_file: '/var/log/pm2/santa-frontend-error.log',
+      out_file: '/var/log/pm2/santa-frontend-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+    },
+  ],
+};

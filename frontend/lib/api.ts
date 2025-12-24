@@ -2,14 +2,21 @@ import axios from 'axios';
 
 // Get API URL - use environment variable or detect from window location
 const getApiUrl = () => {
+  // Use environment variable if set (for production)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
   if (typeof window !== 'undefined') {
     // If we're on mobile (not localhost), use the host's IP
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1') {
-      return `http://${host}:3001/api`;
+      // Use HTTPS in production
+      const protocol = window.location.protocol;
+      return `${protocol}//${host}/api`;
     }
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  return 'http://localhost:3001/api';
 };
 const API_URL = getApiUrl();
 
