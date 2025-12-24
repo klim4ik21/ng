@@ -56,9 +56,9 @@ cd backend
 npm install --production
 cd ..
 
-# Frontend зависимости
+# Frontend зависимости (нужны все зависимости, включая devDependencies для сборки)
 cd frontend
-npm install --production
+npm install
 npm run build
 cd ..
 ```
