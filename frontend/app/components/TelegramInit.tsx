@@ -8,16 +8,21 @@ import { useEffect } from 'react';
  */
 export default function TelegramInit() {
   useEffect(() => {
+    console.log('🔧 TelegramInit: Starting initialization...');
+    
     // Ждем загрузки Telegram WebApp скрипта
     const initTelegram = () => {
       if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
+        console.log('✅ Telegram WebApp found, initializing...');
 
         // Говорим Telegram, что приложение готово
         tg.ready();
+        console.log('📢 Called tg.ready()');
 
         // Расширяем на весь экран
         tg.expand();
+        console.log('📏 Called tg.expand()');
 
         // Включаем автоматическое закрытие при свайпе вниз
         tg.enableClosingConfirmation();
@@ -28,13 +33,15 @@ export default function TelegramInit() {
 
         // Логируем данные пользователя (для отладки)
         if (tg.initDataUnsafe?.user) {
-          console.log('Telegram user:', tg.initDataUnsafe.user);
-          console.log('Telegram initData:', tg.initData);
+          console.log('👤 Telegram user:', tg.initDataUnsafe.user);
+          console.log('📦 Telegram initData:', tg.initData);
+        } else {
+          console.log('⚠️ No Telegram user data found');
         }
 
-        console.log('Telegram WebApp initialized');
+        console.log('✅ Telegram WebApp initialized successfully');
       } else {
-        console.log('Not in Telegram WebApp context');
+        console.log('ℹ️ Not in Telegram WebApp context (running in browser)');
       }
     };
 

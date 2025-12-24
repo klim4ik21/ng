@@ -176,15 +176,21 @@ function HomeContent() {
   useEffect(() => {
     const init = async () => {
       try {
+        console.log('🔍 Initializing app...');
+        
         // Check for invite token in URL
         const token = searchParams.get('token');
         if (token) {
+          console.log('🔑 Found token in URL, joining...');
           await authApi.join(token);
           router.replace('/');
+          return; // Exit early after join
         }
 
         // Get user data
+        console.log('👤 Getting user data...');
         const userData = await authApi.getMe();
+        console.log('✅ User data received:', userData);
         setUser(userData);
         
         // Check if user needs onboarding (no name)
@@ -230,19 +236,31 @@ function HomeContent() {
           // Ignore stories errors
         }
       } catch (error: any) {
+        console.error('❌ Error during initialization:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+        
         if (error.response?.status === 401) {
           // Not authenticated, need to join
+          console.log('🔒 User not authenticated (401)');
           // В Telegram Mini App показываем другое сообщение
           const isTelegram = typeof window !== 'undefined' && window.Telegram?.WebApp;
           if (isTelegram) {
             // В Telegram можно показать кнопку для получения ссылки
-            console.log('User not authenticated in Telegram');
+            console.log('📱 User not authenticated in Telegram');
             // TODO: Можно добавить логику авторизации через Telegram
           } else {
             alert('Нужна персональная ссылка для входа');
           }
+        } else {
+          // Other errors - still stop loading
+          console.error('Unexpected error:', error);
         }
       } finally {
+        console.log('🏁 Initialization complete, setting loading to false');
         setLoading(false);
       }
     };
