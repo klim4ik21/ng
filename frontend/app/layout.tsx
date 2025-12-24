@@ -24,16 +24,10 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body>
-        {/* Telegram WebApp скрипт - загружаем синхронно для быстрой инициализации */}
+        {/* Telegram WebApp скрипт */}
         <Script 
           src="https://telegram.org/js/telegram-web-app.js" 
           strategy="afterInteractive"
-          onLoad={() => {
-            // Скрипт загружен, можно инициализировать
-            if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-              window.Telegram.WebApp.ready();
-            }
-          }}
         />
         <TelegramInit />
         {children}
