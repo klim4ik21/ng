@@ -150,6 +150,8 @@ pm2 logs santa-frontend
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/santa.richislav.com
 ```
 
+**Важно:** Конфигурация nginx по умолчанию настроена на HTTP (порт 80). После настройки SSL через certbot конфигурация будет автоматически обновлена на HTTPS.
+
 ### 4.2. Создание симлинка
 
 ```bash
@@ -174,6 +176,8 @@ sudo nginx -t
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 ```
+
+Теперь сайт должен быть доступен по HTTP: `http://santa.richislav.com`
 
 ## Шаг 5: Настройка SSL (HTTPS)
 
@@ -326,6 +330,33 @@ node server.js  # Запуск вручную для отладки
 1. Проверьте часовой пояс: `timedatectl`
 2. Установите часовой пояс Москвы: `sudo timedatectl set-timezone Europe/Moscow`
 3. Для Node.js приложений также установите переменную окружения в `.env`: `TZ=Europe/Moscow`
+
+### Frontend не запускается (ENOENT: .next/prerender-manifest.json)
+
+Эта ошибка означает, что frontend не был собран. Выполните:
+
+```bash
+cd /var/www/santa-app/frontend
+npm run build
+```
+
+Убедитесь, что сборка прошла успешно и директория `.next` создана:
+
+```bash
+ls -la .next
+```
+
+Затем перезапустите frontend:
+
+```bash
+pm2 restart santa-frontend
+```
+
+### nginx ошибка "no ssl_certificate is defined"
+
+Эта ошибка возникает, если в конфигурации nginx указан `listen 443 ssl`, но SSL сертификаты еще не настроены. 
+
+**Решение:** Используйте конфигурацию из `deploy/nginx.conf`, которая по умолчанию настроена на HTTP (порт 80). SSL будет настроен автоматически certbot'ом при выполнении `sudo certbot --nginx -d santa.richislav.com`.
 
 ## Безопасность
 
