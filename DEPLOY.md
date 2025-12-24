@@ -76,7 +76,7 @@ nano .env
 
 ```env
 PORT=3001
-JWT_SECRET=your-super-secret-jwt-key-change-this
+JWT_SECRET=2912335
 NODE_ENV=production
 FRONTEND_URL=https://santa.richislav.com
 TZ=Europe/Moscow
@@ -101,7 +101,22 @@ node scripts/init-stories.js
 
 ## Шаг 3: Настройка PM2
 
-### 3.1. Запуск приложения через PM2
+### 3.1. Важно: Убедитесь, что frontend собран!
+
+Перед запуском PM2 убедитесь, что frontend собран:
+
+```bash
+cd /var/www/santa-app/frontend
+npm run build
+```
+
+Проверьте, что директория `.next` создана:
+
+```bash
+ls -la .next
+```
+
+### 3.2. Запуск приложения через PM2
 
 ```bash
 cd /var/www/santa-app
@@ -110,7 +125,7 @@ pm2 start deploy/ecosystem.config.js
 
 Это запустит оба процесса: backend и frontend.
 
-### 3.2. Сохранение конфигурации PM2
+### 3.3. Сохранение конфигурации PM2
 
 ```bash
 pm2 save
@@ -119,7 +134,7 @@ pm2 startup
 
 Последняя команда покажет команду, которую нужно выполнить с sudo (для автозапуска при перезагрузке сервера).
 
-### 3.3. Проверка статуса
+### 3.4. Проверка статуса
 
 ```bash
 pm2 status
