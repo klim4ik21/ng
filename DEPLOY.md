@@ -76,15 +76,24 @@ nano .env
 
 ```env
 PORT=3001
-JWT_SECRET=2912335
+JWT_SECRET=your-super-secret-jwt-key-change-this
 NODE_ENV=production
 FRONTEND_URL=https://santa.richislav.com
 TZ=Europe/Moscow
 ```
 
 **Важно:** 
-- Замените `your-super-secret-jwt-key-change-this` на случайную строку!
+- Замените `your-super-secret-jwt-key-change-this` на случайную строку! Можно сгенерировать: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 - `TZ=Europe/Moscow` устанавливает часовой пояс для Node.js приложения
+- **Telegram токены НЕ нужны** для базовой работы - приложение работает через invite токены из админки
+
+**Минимальная конфигурация:**
+- `PORT` - порт сервера (3001)
+- `JWT_SECRET` - секретный ключ для JWT (обязательно измените!)
+- `NODE_ENV=production` - режим production
+- `FRONTEND_URL` - URL фронтенда
+
+Подробнее: см. `ENV_EXAMPLE.md`
 
 ### 2.4. Инициализация базы данных
 

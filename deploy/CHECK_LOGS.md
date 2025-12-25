@@ -145,3 +145,5 @@ sudo tail -10 /var/log/nginx/santa-app-error.log && \
 echo -e "\n=== API Health ===" && \
 curl -s https://santa.richislav.com/api/health || echo "API недоступен"
 ```
+
+
